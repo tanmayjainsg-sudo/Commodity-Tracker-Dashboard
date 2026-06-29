@@ -1,0 +1,14 @@
+symbol,name,category,description
+BZ=F,Brent Crude Oil,Energy,Global crude oil benchmark
+CL=F,WTI Crude Oil,Energy,US crude oil benchmark
+NG=F,Natural Gas,Energy,US natural gas futures
+GC=F,Gold,Metals,Safe-haven precious metal
+HG=F,Copper,Metals,Industrial metal linked to global growth
+ZC=F,Corn,Agriculture,US corn futures
+ZW=F,Wheat,Agriculture,US wheat futures
+ZS=F,Soybeans,Agriculture,US soybean futures
+ZL=F,Soybean Oil,Agriculture,Proxy for vegetable oils and palm oil-linked markets
+SGD=X,USD/SGD,FX,US dollar to Singapore dollar
+MYR=X,USD/MYR,FX,US dollar to Malaysian ringgit
+^GSPC,S&P 500,Macro,Risk sentiment proxy
+DX-Y.NYB,US Dollar Index,Macro,US dollar strength proxy
