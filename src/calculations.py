@@ -11,7 +11,7 @@ def calculate_return(series: pd.Series, periods: int):
         return None
     return (end - start) / start
 
-def calculate_asset_metrics(price_df: pd.DataFrame, assets_df: pd.DataFrame) -> pd.DataFrame:
+def calculate_asset_metrics(price_df: pd.DataFrame, assets_df: pd.DataFrame, ma_window: int = 50) -> pd.DataFrame:
     records = []
     for _, asset_row in assets_df.iterrows():
         symbol = asset_row["symbol"]
@@ -23,16 +23,15 @@ def calculate_asset_metrics(price_df: pd.DataFrame, assets_df: pd.DataFrame) -> 
         daily_returns = close.pct_change().dropna()
         vol_30d = daily_returns.tail(30).std() * np.sqrt(252) if len(daily_returns) >= 5 else None
         ma_20 = close.tail(20).mean() if len(close) >= 20 else None
-        ma_50 = close.tail(50).mean() if len(close) >= 50 else None
-        above_50d_ma = bool(latest_price > ma_50) if (latest_price is not None and ma_50 is not None) else None
+        ma_long = close.tail(ma_window).mean() if len(close) >= ma_window else None
+        above_ma = bool(latest_price > ma_long) if (latest_price is not None and ma_long is not None) else None
         records.append({
             "symbol": symbol, "name": asset_row["name"], "category": asset_row["category"],
             "latest_price": latest_price,
             "return_1d": calculate_return(close, 1), "return_1w": calculate_return(close, 5),
             "return_1m": calculate_return(close, 21), "return_3m": calculate_return(close, 63),
             "return_6m": calculate_return(close, 126),
-            "volatility_30d": vol_30d, "ma_20": ma_20, "ma_50": ma_50, "above_50d_ma": above_50d_ma,
-        })
+            "volatility_30d": vol_30d, "ma_20": ma_20, "ma_long": ma_long, "above_ma": above_ma })
     return pd.DataFrame(records)
 
 def calculate_category_performance(metrics_df: pd.DataFrame) -> pd.DataFrame:

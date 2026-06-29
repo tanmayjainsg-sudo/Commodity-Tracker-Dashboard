@@ -16,6 +16,7 @@ with st.sidebar:
     st.divider()
     period = st.selectbox("Data Period", options=["3mo", "6mo", "1y", "2y", "5y"], index=2)
     return_metric = st.selectbox("Return Metric", options=["return_1d","return_1w","return_1m","return_3m","return_6m"], format_func=lambda x: {"return_1d":"1-Day","return_1w":"1-Week","return_1m":"1-Month","return_3m":"3-Month","return_6m":"6-Month"}[x], index=1)
+    ma_window = st.selectbox("Moving Average Window", options=[50, 100, 200], index=0, format_func=lambda x: f"{x}-Day MA")
     st.divider()
     st.info("📡 Market data is cached for 1 hour.")
 
@@ -43,7 +44,7 @@ if price_df.empty:
     st.error("No market data could be loaded. Please try again later.")
     st.stop()
 
-metrics_df = calculate_asset_metrics(price_df, filtered_assets)
+metrics_df = calculate_asset_metrics(price_df, filtered_assets, ma_window=ma_window)
 category_df = calculate_category_performance(metrics_df)
 st.caption(f"🕒 Data last updated: {fetched_at}")
 
@@ -71,8 +72,8 @@ with tab1:
     for col in ["return_1d","return_1w","return_1m","return_3m","return_6m","volatility_30d"]:
         display_df[col] = display_df[col].apply(format_percentage)
     display_df["latest_price"] = display_df["latest_price"].apply(format_number)
-    display_df["above_50d_ma"] = display_df["above_50d_ma"].apply(lambda x: "✅" if x is True else ("❌" if x is False else "—"))
-    rename_map = {"category":"Category","name":"Asset","latest_price":"Latest Price","return_1d":"1D","return_1w":"1W","return_1m":"1M","return_3m":"3M","return_6m":"6M","volatility_30d":"30D Vol","above_50d_ma":"Above 50D MA"}
+    display_df["above_ma"] = display_df["above_ma"].apply(lambda x: "✅" if x is True else ("❌" if x is False else "—"))
+    rename_map = {"category":"Category","name":"Asset","latest_price":"Latest Price","return_1d":"1D","return_1w":"1W","return_1m":"1M","return_3m":"3M","return_6m":"6M","volatility_30d":"30D Vol","above_ma":f"Above {ma_window}D MA"}
     st.dataframe(display_df.rename(columns=rename_map)[list(rename_map.values())], use_container_width=True, hide_index=True)
     st.divider()
     col_a, col_b = st.columns(2)
@@ -99,7 +100,7 @@ with tab2:
         c2.metric("1W Return", format_percentage(selected_row["return_1w"]))
         c3.metric("1M Return", format_percentage(selected_row["return_1m"]))
         c4.metric("30D Volatility", f"{selected_row['volatility_30d']*100:.1f}%" if selected_row["volatility_30d"] else "N/A")
-        c5.metric("vs 50D MA", "✅ Above" if selected_row["above_50d_ma"] is True else ("❌ Below" if selected_row["above_50d_ma"] is False else "—"))
+        c5.metric(f"vs {ma_window}D MA", "✅ Above" if selected_row["above_ma"] is True else ("❌ Below" if selected_row["above_ma"] is False else "—"))
         asset_prices = price_df[price_df["symbol"] == selected_symbol].sort_values("Date")
         st.plotly_chart(create_price_chart(asset_prices, selected_name), use_container_width=True)
         st.subheader("Recent Closing Prices (Last 10 Days)")
@@ -152,11 +153,6 @@ with tab4:
     st.caption("**How this note is generated:** it is built programmatically from the same live metrics shown elsewhere in the dashboard, not by a language model. It identifies the strongest and weakest performers and categories, then fills these figures into structured sentence templates. Some sections use simple conditional logic, for example the metals commentary compares gold and copper to flag a risk-on or risk-off tilt. Because it is rule-based, the same data always produces the same note, with no external API required.")
     st.divider()
     st.download_button("⬇️ Download Note as .txt", data=note_text.replace("**", "").replace("*", ""), file_name="commodity_pulse_weekly_note.txt", mime="text/plain")
-    # st.divider()
-    #st.subheader("💼 LinkedIn Caption Draft")
-    #caption = "I built Commodity Pulse, a Python and Streamlit dashboard to track commodity markets across energy, agriculture, metals, FX and macro indicators.\n\nThe project calculates weekly and monthly returns, ranks top movers, compares cross-market relationships, and generates a simple weekly market note.\n\nI built this to combine my Computer Engineering background with my growing interest in physical commodities, trading analytics and market structure."
-    #st.info(caption)
-    #st.download_button("⬇️ Copy Caption as .txt", data=caption, file_name="linkedin_caption.txt", mime="text/plain")
 
 with tab5:
     st.subheader("About This Project")
@@ -181,7 +177,7 @@ For me, building this was a way to connect the technical skills I'm developing i
 
 ### What it does
 
-This dashboard pulls live market data via `yfinance`, calculates multi-period returns and annualized volatility, ranks the biggest movers, compares cross-asset relationships, and generates a simple weekly market note.
+This dashboard pulls market data via `yfinance` refreshed hourly, calculates multi-period returns and annualized volatility, ranks the biggest movers, compares cross-asset relationships, and generates a simple weekly market note.
 
 ---
 *This is a portfolio and learning project. Not investment advice.*
