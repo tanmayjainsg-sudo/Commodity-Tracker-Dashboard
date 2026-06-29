@@ -16,15 +16,15 @@ I'm a Computer Engineering student with a long-standing interest in finance and 
 - Top movers ranking and category-level performance
 - Cross-asset normalized comparison and daily-return correlation
 - Auto-generated weekly market note
-- Resilient data fetching — failed tickers are skipped, not fatal
+- Resilient data fetching, failed tickers are skipped, not fatal
 - 1-hour data caching with a visible "last updated" timestamp
 
 ## Architecture
 
-The app is organized into a thin UI layer (\`app.py\`) and a modular \`src/\` package, so the business logic is independent of Streamlit and can be tested on its own.
+The app is organized into a thin UI layer (`app.py`) and a modular `src/` package, so the business logic is independent of Streamlit and can be tested on its own.
 
-\`\`\`
-app.py                  Streamlit UI — layout, tabs, widgets
+```
+app.py                  Streamlit UI: layout, tabs, widgets
 src/
   config.py             Constants (asset list config, return windows)
   data_fetcher.py       yfinance fetching + caching + timestamp
@@ -35,32 +35,32 @@ src/
 data/
   assets.csv            Asset universe (symbol, name, category)
 tests_calculations.py   Unit tests for the calculation logic
-\`\`\`
+```
 
-**Data flow:** \`assets.csv\` defines the universe → \`data_fetcher\` pulls and caches prices → \`calculations\` derives metrics → \`charts\` and \`market_note\` render them → \`app.py\` assembles the UI.
+Data flow: `assets.csv` defines the universe, `data_fetcher` pulls and caches prices, `calculations` derives metrics, `charts` and `market_note` render them, and `app.py` assembles the UI.
 
-A key design choice was keeping all numerical logic in \`calculations.py\` with no Streamlit dependencies, so it can be unit-tested in isolation.
+A key design choice was keeping all numerical logic in `calculations.py` with no Streamlit dependencies, so it can be unit-tested in isolation.
 
 ## Testing
 
 The calculation logic is covered by unit tests (pytest):
 
-\`\`\`bash
+```bash
 pytest tests_calculations.py -v
-\`\`\`
+```
 
-Tests verify return math, NaN handling, divide-by-zero protection, price normalization, and correlation — including edge cases like insufficient or missing data.
+Tests verify return math, NaN handling, divide-by-zero protection, price normalization, and correlation, including edge cases like insufficient or missing data.
 
 ## Running locally
 
-\`\`\`bash
+```bash
 python3 -m venv venv
-source venv/bin/activate        # Windows: venv\\Scripts\\activate
+source venv/bin/activate        # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 streamlit run app.py
-\`\`\`
+```
 
-Then open http://localhost:8501.
+Then open http://localhost:8501
 
 ## Notes and limitations
 
@@ -70,7 +70,7 @@ Then open http://localhost:8501.
 
 ## Possible next steps
 
-- Brent–WTI spread tracker
+- Brent-WTI spread tracker
 - Rolling correlation over time
 - Disk-persisted data cache
 - Live deployment via Streamlit Community Cloud
